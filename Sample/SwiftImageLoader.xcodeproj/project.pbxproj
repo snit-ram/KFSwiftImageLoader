@@ -447,11 +447,11 @@
 		6412B9831BCB703500B057AC /* KFSwiftImageLoader.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = KFSwiftImageLoader.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6412B99A1BCB709500B057AC /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6412B99B1BCB709500B057AC /* KFSwiftImageLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KFSwiftImageLoader.h; sourceTree = "<group>"; };
-		6412B9B51BCB767300B057AC /* KFImageCacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = KFImageCacheManager.swift; path = ../KFSwiftImageLoader/KFImageCacheManager.swift; sourceTree = "<group>"; };
-		6412B9B61BCB767300B057AC /* MKAnnotationViewExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MKAnnotationViewExtensions.swift; path = ../KFSwiftImageLoader/MKAnnotationViewExtensions.swift; sourceTree = "<group>"; };
-		6412B9B71BCB767300B057AC /* UIButtonExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UIButtonExtensions.swift; path = ../KFSwiftImageLoader/UIButtonExtensions.swift; sourceTree = "<group>"; };
-		6412B9B81BCB767300B057AC /* UIImageViewExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UIImageViewExtensions.swift; path = ../KFSwiftImageLoader/UIImageViewExtensions.swift; sourceTree = "<group>"; };
-		6412B9B91BCB767300B057AC /* WKInterfaceImageExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WKInterfaceImageExtensions.swift; path = ../KFSwiftImageLoader/WKInterfaceImageExtensions.swift; sourceTree = "<group>"; };
+		6412B9B51BCB767300B057AC /* KFImageCacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = KFImageCacheManager.swift; path = ../KFSwiftImageLoader/KFImageCacheManager.swift; sourceTree = SOURCE_ROOT; };
+		6412B9B61BCB767300B057AC /* MKAnnotationViewExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MKAnnotationViewExtensions.swift; path = ../KFSwiftImageLoader/MKAnnotationViewExtensions.swift; sourceTree = SOURCE_ROOT; };
+		6412B9B71BCB767300B057AC /* UIButtonExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UIButtonExtensions.swift; path = ../KFSwiftImageLoader/UIButtonExtensions.swift; sourceTree = SOURCE_ROOT; };
+		6412B9B81BCB767300B057AC /* UIImageViewExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UIImageViewExtensions.swift; path = ../KFSwiftImageLoader/UIImageViewExtensions.swift; sourceTree = SOURCE_ROOT; };
+		6412B9B91BCB767300B057AC /* WKInterfaceImageExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WKInterfaceImageExtensions.swift; path = ../KFSwiftImageLoader/WKInterfaceImageExtensions.swift; sourceTree = SOURCE_ROOT; };
 		6412B9D21BCB7BCC00B057AC /* SwiftImageLoader WatchKit 1 Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "SwiftImageLoader WatchKit 1 Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6412B9D81BCB7BCC00B057AC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6412B9DB1BCB7BCC00B057AC /* SwiftImageLoader WatchKit 1 App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SwiftImageLoader WatchKit 1 App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1417,15 +1417,21 @@
 				TargetAttributes = {
 					6412B9821BCB703500B057AC = {
 						CreatedOnToolsVersion = 7.0.1;
+						LastSwiftMigration = 0800;
 					};
 					6412B9D11BCB7BCC00B057AC = {
 						CreatedOnToolsVersion = 7.0.1;
+						LastSwiftMigration = 0800;
 					};
 					6412B9DA1BCB7BCC00B057AC = {
 						CreatedOnToolsVersion = 7.0.1;
+						LastSwiftMigration = 0800;
 					};
 					64C474A31AB901B900361603 = {
 						CreatedOnToolsVersion = 6.2;
+						DevelopmentTeam = YAB5X6R5TD;
+						LastSwiftMigration = 0800;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -1919,6 +1925,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -1948,6 +1955,7 @@
 				SWIFT_DISABLE_SAFETY_CHECKS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 3.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -1966,6 +1974,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.kiavashfaisali.SwiftImageLoader.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = 4;
 				"TARGETED_DEVICE_FAMILY[sdk=iphonesimulator*]" = "1,4";
 			};
@@ -1986,6 +1995,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.kiavashfaisali.SwiftImageLoader.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = 4;
 				"TARGETED_DEVICE_FAMILY[sdk=iphonesimulator*]" = "1,4";
 			};
@@ -2007,6 +2017,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "SwiftImageLoader WatchKit 1 Extension/SwiftImageLoader WatchKit 1 Extension-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -2027,6 +2038,7 @@
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "SwiftImageLoader WatchKit 1 Extension/SwiftImageLoader WatchKit 1 Extension-Bridging-Header.h";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -2115,6 +2127,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = YAB5X6R5TD;
 				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = SwiftImageLoader/Info.plist;
@@ -2123,6 +2137,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.kiavashfaisali.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -2131,6 +2146,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = YAB5X6R5TD;
 				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_OPTIMIZATION_LEVEL = fast;
@@ -2142,6 +2159,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_DISABLE_SAFETY_CHECKS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};

@@ -34,11 +34,11 @@ public extension WKInterfaceImage {
     }
     
     // MARK: - Helper Methods
-    final private func storeImageDataInDeviceCache(imageData: NSData, forURLAbsoluteString urlAbsoluteString: String) {
+    final private func storeImageDataInDeviceCache(_ imageData: Data, forURLAbsoluteString urlAbsoluteString: String) {
         // Max cache size is 5 MB.
         let maxCacheSize = 5 * 1024 * 1024
-        var cacheTotalCost = imageData.length
-        let currentDevice = WKInterfaceDevice.currentDevice()
+        var cacheTotalCost = imageData.count
+        let currentDevice = WKInterfaceDevice.current()
         
         // If the image data is too big to be stored into the device's cache, then fallback to the Bluetooth transfer method.
         if cacheTotalCost > maxCacheSize {
@@ -46,16 +46,16 @@ public extension WKInterfaceImage {
         }
         else {
             for (urlString, cacheCostNumber) in currentDevice.cachedImages {
-                cacheTotalCost += cacheCostNumber.integerValue
+                cacheTotalCost += cacheCostNumber.intValue
                 
                 // Check if the total cost would exceed the max cache size of 5 MB.
                 if cacheTotalCost > maxCacheSize {
                     // Evict the current loop item from the cache to make space.
-                    currentDevice.removeCachedImageWithName(urlString)
+                    currentDevice.removeCachedImage(withName: urlString)
                 }
             }
             
-            if currentDevice.addCachedImageWithData(imageData, name: urlAbsoluteString) {
+            if currentDevice.addCachedImage(with: imageData, name: urlAbsoluteString) {
                 self.setImageNamed(urlAbsoluteString)
             }
             else {
@@ -73,8 +73,8 @@ public extension WKInterfaceImage {
         - parameter shouldUseDeviceCache: A boolean indicating whether or not to use the  Watch's device cache for dramatically improved performance. This should only be considered for images that are likely to be loaded more than once throughout the lifetime of the app.
         - parameter completion: An optional closure that is called to indicate completion of the intended purpose of this method. It returns two values: the first is a Bool indicating whether everything was successful, and the second is an optional NSError which will be non-nil should an error occur. The default value is nil.
     */
-    final public func loadImageFromURLString(string: String, placeholderImageName: String? = nil, shouldUseDeviceCache: Bool = false, completion: ((finished: Bool, error: NSError?) -> Void)? = nil) {
-        if let url = NSURL(string: string) {
+    final public func loadImageFromURLString(_ string: String, placeholderImageName: String? = nil, shouldUseDeviceCache: Bool = false, completion: ((finished: Bool, error: NSError?) -> Void)? = nil) {
+        if let url = URL(string: string) {
             loadImageFromURL(url, placeholderImageName: placeholderImageName, shouldUseDeviceCache: shouldUseDeviceCache, completion: completion)
         }
     }
@@ -87,11 +87,11 @@ public extension WKInterfaceImage {
         - parameter shouldUseDeviceCache: A boolean indicating whether or not to use the  Watch's device cache for dramatically improved performance. This should only be considered for images that are likely to be loaded more than once throughout the lifetime of the app.
         - parameter completion: An optional closure that is called to indicate completion of the intended purpose of this method. It returns two values: the first is a Bool indicating whether everything was successful, and the second is an optional NSError which will be non-nil should an error occur. The default value is nil.
     */
-    final public func loadImageFromURL(url: NSURL, placeholderImageName: String? = nil, shouldUseDeviceCache: Bool = false, completion: ((finished: Bool, error: NSError?) -> Void)? = nil) {
+    final public func loadImageFromURL(_ url: URL, placeholderImageName: String? = nil, shouldUseDeviceCache: Bool = false, completion: ((finished: Bool, error: NSError?) -> Void)? = nil) {
         let cacheManager = KFImageCacheManager.sharedInstance
-        let request = NSMutableURLRequest(URL: url, cachePolicy: cacheManager.session.configuration.requestCachePolicy, timeoutInterval: cacheManager.session.configuration.timeoutIntervalForRequest)
+        let request = NSMutableURLRequest(url: url, cachePolicy: cacheManager.session.configuration.requestCachePolicy, timeoutInterval: cacheManager.session.configuration.timeoutIntervalForRequest)
         request.addValue("image/*", forHTTPHeaderField: "Accept")
-        loadImageFromRequest(request, placeholderImageName: placeholderImageName, shouldUseDeviceCache: shouldUseDeviceCache, completion: completion)
+        loadImageFromRequest(request as URLRequest, placeholderImageName: placeholderImageName, shouldUseDeviceCache: shouldUseDeviceCache, completion: completion)
     }
     
     /**
@@ -102,18 +102,18 @@ public extension WKInterfaceImage {
         - parameter shouldUseDeviceCache: A boolean indicating whether or not to use the  Watch's device cache for dramatically improved performance. This should only be considered for images that are likely to be loaded more than once throughout the lifetime of the app.
         - parameter completion: An optional closure that is called to indicate completion of the intended purpose of this method. It returns two values: the first is a Bool indicating whether everything was successful, and the second is an optional NSError which will be non-nil should an error occur. The default value is nil.
     */
-    final public func loadImageFromRequest(request: NSURLRequest, placeholderImageName: String? = nil, shouldUseDeviceCache: Bool = false, completion: ((finished: Bool, error: NSError?) -> Void)? = nil) {
+    final public func loadImageFromRequest(_ request: URLRequest, placeholderImageName: String? = nil, shouldUseDeviceCache: Bool = false, completion: ((finished: Bool, error: NSError?) -> Void)? = nil) {
         self.completionHolder = CompletionHolder(completion: completion)
         
-        guard let urlAbsoluteString = request.URL?.absoluteString else {
+        guard let urlAbsoluteString = request.url?.absoluteString else {
             self.completionHolder.completion?(finished: false, error: nil)
             return
         }
         
         let cacheManager = KFImageCacheManager.sharedInstance
         let initialIndexIdentifier = -1
-        let currentDevice = WKInterfaceDevice.currentDevice()
-        let sharedURLCache = NSURLCache.sharedURLCache()
+        let currentDevice = WKInterfaceDevice.current()
+        let sharedURLCache = URLCache.shared
         
         if shouldUseDeviceCache {
             // If there's already a cached image on the Apple Watch, simply set the image directly.
@@ -125,7 +125,7 @@ public extension WKInterfaceImage {
         }
         else {
             // Since the decision was made to not use the Apple Watch's device cache, remove the stale image currently stored (if any).
-            currentDevice.removeCachedImageWithName(urlAbsoluteString)
+            currentDevice.removeCachedImage(withName: urlAbsoluteString)
         }
         
         // If there's already a cached image, load it into the interface.
@@ -140,7 +140,7 @@ public extension WKInterfaceImage {
             self.completionHolder.completion?(finished: true, error: nil)
         }
         // If there's already a cached response, load the image data into the interface.
-        else if let cachedResponse = sharedURLCache.cachedResponseForRequest(request), image = UIImage(data: cachedResponse.data), creationTimestamp = cachedResponse.userInfo?["creationTimestamp"] as? CFTimeInterval where (NSDate.timeIntervalSinceReferenceDate() - creationTimestamp) < Double(cacheManager.diskCacheMaxAge) {
+        else if let cachedResponse = sharedURLCache.cachedResponse(for: request), image = UIImage(data: cachedResponse.data), creationTimestamp = cachedResponse.userInfo?["creationTimestamp"] as? CFTimeInterval where (Date.timeIntervalSinceReferenceDate - creationTimestamp) < Double(cacheManager.diskCacheMaxAge) {
             if shouldUseDeviceCache {
                 storeImageDataInDeviceCache(cachedResponse.data, forURLAbsoluteString: urlAbsoluteString)
             }
@@ -154,7 +154,7 @@ public extension WKInterfaceImage {
         // Either begin downloading the image or become an observer for an existing request.
         else {
             // Remove the stale disk-cached response (if any).
-            sharedURLCache.removeCachedResponseForRequest(request)
+            sharedURLCache.removeCachedResponse(for: request)
             
             // Set the placeholder image if it was provided.
             if let imageName = placeholderImageName {
@@ -165,11 +165,11 @@ public extension WKInterfaceImage {
             if cacheManager.isDownloadingFromURL(urlAbsoluteString) == false {
                 cacheManager.setIsDownloadingFromURL(true, forURLString: urlAbsoluteString)
                 
-                let dataTask = cacheManager.session.dataTaskWithRequest(request) {
-                    (taskData: NSData?, taskResponse: NSURLResponse?, taskError: NSError?) in
+                let dataTask = cacheManager.session.dataTask(with: request) {
+                    (taskData: Data?, taskResponse: URLResponse?, taskError: Error?) in
                     
-                    guard let data = taskData, response = taskResponse, image = UIImage(data: data) where taskError == nil else {
-                        dispatch_async(dispatch_get_main_queue()) {
+                    guard let data = taskData, let response = taskResponse, let image = UIImage(data: data) , taskError == nil else {
+                        DispatchQueue.main.async {
                             cacheManager.setIsDownloadingFromURL(false, forURLString: urlAbsoluteString)
                             cacheManager.removeImageCacheObserversForKey(urlAbsoluteString)
                             self.completionHolder.completion?(finished: false, error: taskError)
@@ -178,7 +178,7 @@ public extension WKInterfaceImage {
                         return
                     }
                     
-                    dispatch_async(dispatch_get_main_queue()) {
+                    DispatchQueue.main.async {
                         if shouldUseDeviceCache {
                             self.storeImageDataInDeviceCache(data, forURLAbsoluteString: urlAbsoluteString)
                         }
@@ -189,18 +189,18 @@ public extension WKInterfaceImage {
                         cacheManager[urlAbsoluteString] = image
                         
                         let responseDataIsCacheable = cacheManager.diskCacheMaxAge > 0 &&
-                            Double(data.length) <= 0.05 * Double(sharedURLCache.diskCapacity) &&
-                            (cacheManager.session.configuration.requestCachePolicy == .ReturnCacheDataElseLoad ||
-                                cacheManager.session.configuration.requestCachePolicy == .ReturnCacheDataDontLoad) &&
-                            (request.cachePolicy == .ReturnCacheDataElseLoad ||
-                                request.cachePolicy == .ReturnCacheDataDontLoad)
+                            Double(data.count) <= 0.05 * Double(sharedURLCache.diskCapacity) &&
+                            (cacheManager.session.configuration.requestCachePolicy == .returnCacheDataElseLoad ||
+                                cacheManager.session.configuration.requestCachePolicy == .returnCacheDataDontLoad) &&
+                            (request.cachePolicy == .returnCacheDataElseLoad ||
+                                request.cachePolicy == .returnCacheDataDontLoad)
                         
-                        if let httpResponse = response as? NSHTTPURLResponse, url = httpResponse.URL where responseDataIsCacheable {
+                        if let httpResponse = response as? HTTPURLResponse, url = httpResponse.url where responseDataIsCacheable {
                             if var allHeaderFields = httpResponse.allHeaderFields as? [String: String] {
                                 allHeaderFields["Cache-Control"] = "max-age=\(cacheManager.diskCacheMaxAge)"
-                                if let cacheControlResponse = NSHTTPURLResponse(URL: url, statusCode: httpResponse.statusCode, HTTPVersion: "HTTP/1.1", headerFields: allHeaderFields) {
-                                    let cachedResponse = NSCachedURLResponse(response: cacheControlResponse, data: data, userInfo: ["creationTimestamp": NSDate.timeIntervalSinceReferenceDate()], storagePolicy: .Allowed)
-                                    sharedURLCache.storeCachedResponse(cachedResponse, forRequest: request)
+                                if let cacheControlResponse = HTTPURLResponse(url: url, statusCode: httpResponse.statusCode, httpVersion: "HTTP/1.1", headerFields: allHeaderFields) {
+                                    let cachedResponse = CachedURLResponse(response: cacheControlResponse, data: data, userInfo: ["creationTimestamp": Date.timeIntervalSinceReferenceDate], storagePolicy: .allowed)
+                                    sharedURLCache.storeCachedResponse(cachedResponse, for: request)
                                 }
                             }
                         }

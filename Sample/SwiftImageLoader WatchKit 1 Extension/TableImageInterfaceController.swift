@@ -13,15 +13,15 @@ final class TableImageInterfaceController: WKInterfaceController {
     var imageURLStringsArray: [String]!
     
     // MARK: - Setup and Teardown
-    override func awakeWithContext(context: AnyObject?) {
-        super.awakeWithContext(context)
+    override func awake(withContext context: AnyObject?) {
+        super.awake(withContext: context)
         
         if let imageURLStringsArray = context as? [String] where imageURLStringsArray.count > 0 {
             self.imageURLStringsArray = imageURLStringsArray
             self.table.setNumberOfRows(self.imageURLStringsArray.count, withRowType: "ImageRowType")
             
             for i in 0..<self.imageURLStringsArray.count {
-                let imageRowType = self.table.rowControllerAtIndex(i) as! ImageRowType
+                let imageRowType = self.table.rowController(at: i) as! ImageRowType
                 let urlString = self.imageURLStringsArray[i]
                 imageRowType.image.loadImageFromURLString(urlString, placeholderImageName: "KiavashFaisali", shouldUseDeviceCache: true, completion: nil)
             }

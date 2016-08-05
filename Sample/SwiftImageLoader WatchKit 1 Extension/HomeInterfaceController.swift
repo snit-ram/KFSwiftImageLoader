@@ -12,29 +12,29 @@ final class HomeInterfaceController: WKInterfaceController {
     var imageURLStringsArray = [String]()
     
     // MARK: - Setup and Teardown
-    override func awakeWithContext(context: AnyObject?) {
-        super.awakeWithContext(context)
+    override func awake(withContext context: AnyObject?) {
+        super.awake(withContext: context)
         
         // Animations created using KFWatchKitAnimations.
         // https://github.com/kiavashfaisali/KFWatchKitAnimations
         let drawCircleDuration = 2.0
         self.animationImage.setImageNamed("drawGreenCircle-")
-        self.animationImage.startAnimatingWithImagesInRange(NSMakeRange(0, 118), duration: drawCircleDuration, repeatCount: 1)
+        self.animationImage.startAnimatingWithImages(in: NSMakeRange(0, 118), duration: drawCircleDuration, repeatCount: 1)
         
         self.dispatchAnimationsAfterSeconds(drawCircleDuration) {
             let countdownDuration = 0.7
             self.animationImage.setImageNamed("removeBlur-")
-            self.animationImage.startAnimatingWithImagesInRange(NSMakeRange(0, 41), duration: countdownDuration, repeatCount: 1)
+            self.animationImage.startAnimatingWithImages(in: NSMakeRange(0, 41), duration: countdownDuration, repeatCount: 1)
             
             self.dispatchAnimationsAfterSeconds(countdownDuration) {
                 let verticalShiftDuration = 1.0
                 self.animationImage.setImageNamed("verticalShiftAndFadeIn-")
-                self.animationImage.startAnimatingWithImagesInRange(NSMakeRange(0, 59), duration: verticalShiftDuration, repeatCount: 1)
+                self.animationImage.startAnimatingWithImages(in: NSMakeRange(0, 59), duration: verticalShiftDuration, repeatCount: 1)
                 
                 self.dispatchAnimationsAfterSeconds(verticalShiftDuration) {
                     let yellowCharacterDuration = 2.0
                     self.animationImage.setImageNamed("yellowCharacterJump-")
-                    self.animationImage.startAnimatingWithImagesInRange(NSMakeRange(0, 110), duration: yellowCharacterDuration, repeatCount: 0)
+                    self.animationImage.startAnimatingWithImages(in: NSMakeRange(0, 110), duration: yellowCharacterDuration, repeatCount: 0)
                     self.loadDuckDuckGoResults()
                 }
             }
@@ -52,11 +52,11 @@ final class HomeInterfaceController: WKInterfaceController {
     
     // MARK: - Miscellaneous Methods
     func loadDuckDuckGoResults() {
-        let session = NSURLSession.sharedSession()
-        let url = NSURL(string: "http://api.duckduckgo.com/?q=simpsons+characters&format=json")!
-        let request = NSURLRequest(URL: url, cachePolicy: .ReturnCacheDataElseLoad, timeoutInterval: 60.0)
+        let session = URLSession.shared
+        let url = URL(string: "http://api.duckduckgo.com/?q=simpsons+characters&format=json")!
+        let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad, timeoutInterval: 60.0)
         
-        let dataTask = session.dataTaskWithRequest(request) {
+        let dataTask = session.dataTask(with: request) {
             (taskData, taskResponse, taskError) in
             
             guard let data = taskData where taskError == nil else {
@@ -64,9 +64,9 @@ final class HomeInterfaceController: WKInterfaceController {
                 return
             }
             
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async {
                 do {
-                    if let jsonDict = try NSJSONSerialization.JSONObjectWithData(data, options: .AllowFragments) as? [String: AnyObject] {
+                    if let jsonDict = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: AnyObject] {
                         if let relatedTopics = jsonDict["RelatedTopics"] as? [[String: AnyObject]] {
                             for relatedTopic in relatedTopics {
                                 if let imageURLString = relatedTopic["Icon"]?["URL"] as? String {
@@ -82,7 +82,7 @@ final class HomeInterfaceController: WKInterfaceController {
                                 // Uncomment to randomize the image ordering.
 //                                self.randomizeImages()
                                 
-                                WKInterfaceController.reloadRootControllersWithNames(["TableImageInterfaceController"], contexts: [self.imageURLStringsArray])
+                                WKInterfaceController.reloadRootControllers(withNames: ["TableImageInterfaceController"], contexts: [self.imageURLStringsArray])
                             }
                         }
                     }
@@ -97,7 +97,7 @@ final class HomeInterfaceController: WKInterfaceController {
     }
     
     func randomizeImages() {
-        for (var i = 0; i < self.imageURLStringsArray.count; i++) {
+        for i in 0 ..< self.imageURLStringsArray.count {
             let randomIndex = Int(arc4random()) % self.imageURLStringsArray.count
             let tempValue = self.imageURLStringsArray[randomIndex]
             self.imageURLStringsArray[randomIndex] = self.imageURLStringsArray[i]
@@ -105,12 +105,12 @@ final class HomeInterfaceController: WKInterfaceController {
         }
     }
     
-    func dispatchAnimationsAfterSeconds(seconds: Double, animations: () -> Void) {
+    func dispatchAnimationsAfterSeconds(_ seconds: Double, animations: () -> Void) {
         if seconds <= 0.0 {
             return
         }
         
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(seconds * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(seconds * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
             self.animationImage.stopAnimating()
             animations()
         }

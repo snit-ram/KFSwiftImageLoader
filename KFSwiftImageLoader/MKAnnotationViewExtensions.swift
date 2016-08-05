@@ -42,8 +42,8 @@ public extension MKAnnotationView {
         - parameter placeholderImage: An optional UIImage representing a placeholder image that is loaded into the view while the asynchronous download takes place. The default value is nil.
         - parameter completion: An optional closure that is called to indicate completion of the intended purpose of this method. It returns two values: the first is a Bool indicating whether everything was successful, and the second is an optional NSError which will be non-nil should an error occur. The default value is nil.
     */
-    final public func loadImageFromURLString(string: String, placeholderImage: UIImage? = nil, completion: ((finished: Bool, error: NSError?) -> Void)? = nil) {
-        if let url = NSURL(string: string) {
+    final public func loadImageFromURLString(_ string: String, placeholderImage: UIImage? = nil, completion: ((finished: Bool, error: NSError?) -> Void)? = nil) {
+        if let url = URL(string: string) {
             loadImageFromURL(url, placeholderImage: placeholderImage, completion: completion)
         }
     }
@@ -55,11 +55,11 @@ public extension MKAnnotationView {
         - parameter placeholderImage: An optional UIImage representing a placeholder image that is loaded into the view while the asynchronous download takes place. The default value is nil.
         - parameter completion: An optional closure that is called to indicate completion of the intended purpose of this method. It returns two values: the first is a Bool indicating whether everything was successful, and the second is an optional NSError which will be non-nil should an error occur. The default value is nil.
     */
-    final public func loadImageFromURL(url: NSURL, placeholderImage: UIImage? = nil, completion: ((finished: Bool, error: NSError?) -> Void)? = nil) {
+    final public func loadImageFromURL(_ url: URL, placeholderImage: UIImage? = nil, completion: ((finished: Bool, error: NSError?) -> Void)? = nil) {
         let cacheManager = KFImageCacheManager.sharedInstance
-        let request = NSMutableURLRequest(URL: url, cachePolicy: cacheManager.session.configuration.requestCachePolicy, timeoutInterval: cacheManager.session.configuration.timeoutIntervalForRequest)
+        let request = NSMutableURLRequest(url: url, cachePolicy: cacheManager.session.configuration.requestCachePolicy, timeoutInterval: cacheManager.session.configuration.timeoutIntervalForRequest)
         request.addValue("image/*", forHTTPHeaderField: "Accept")
-        loadImageFromRequest(request, placeholderImage: placeholderImage, completion: completion)
+        loadImageFromRequest(request as URLRequest, placeholderImage: placeholderImage, completion: completion)
     }
     
     /**
@@ -69,20 +69,20 @@ public extension MKAnnotationView {
         - parameter placeholderImage: An optional UIImage representing a placeholder image that is loaded into the view while the asynchronous download takes place. The default value is nil.
         - parameter completion: An optional closure that is called to indicate completion of the intended purpose of this method. It returns two values: the first is a Bool indicating whether everything was successful, and the second is an optional NSError which will be non-nil should an error occur. The default value is nil.
     */
-    final public func loadImageFromRequest(request: NSURLRequest, placeholderImage: UIImage? = nil, completion: ((finished: Bool, error: NSError?) -> Void)? = nil) {
+    final public func loadImageFromRequest(_ request: URLRequest, placeholderImage: UIImage? = nil, completion: ((finished: Bool, error: NSError?) -> Void)? = nil) {
         self.completionHolder = CompletionHolder(completion: completion)
         
-        guard let urlAbsoluteString = request.URL?.absoluteString else {
+        guard let urlAbsoluteString = request.url?.absoluteString else {
             self.completionHolder.completion?(finished: false, error: nil)
             return
         }
         
         let cacheManager = KFImageCacheManager.sharedInstance
         let fadeAnimationDuration = cacheManager.fadeAnimationDuration
-        let sharedURLCache = NSURLCache.sharedURLCache()
+        let sharedURLCache = URLCache.shared
         
-        func loadImage(image: UIImage) -> Void {
-            UIView.transitionWithView(self, duration: fadeAnimationDuration, options: .TransitionCrossDissolve, animations: {
+        func loadImage(_ image: UIImage) -> Void {
+            UIView.transition(with: self, duration: fadeAnimationDuration, options: .transitionCrossDissolve, animations: {
                 self.image = image
             }, completion: nil)
             
@@ -94,7 +94,7 @@ public extension MKAnnotationView {
             loadImage(image)
         }
         // If there's already a cached response, load the image data into the image view.
-        else if let cachedResponse = sharedURLCache.cachedResponseForRequest(request), image = UIImage(data: cachedResponse.data), creationTimestamp = cachedResponse.userInfo?["creationTimestamp"] as? CFTimeInterval where (NSDate.timeIntervalSinceReferenceDate() - creationTimestamp) < Double(cacheManager.diskCacheMaxAge) {
+        else if let cachedResponse = sharedURLCache.cachedResponse(for: request), image = UIImage(data: cachedResponse.data), creationTimestamp = cachedResponse.userInfo?["creationTimestamp"] as? CFTimeInterval where (Date.timeIntervalSinceReferenceDate - creationTimestamp) < Double(cacheManager.diskCacheMaxAge) {
             loadImage(image)
             
             cacheManager[urlAbsoluteString] = image
@@ -102,7 +102,7 @@ public extension MKAnnotationView {
         // Either begin downloading the image or become an observer for an existing request.
         else {
             // Remove the stale disk-cached response (if any).
-            sharedURLCache.removeCachedResponseForRequest(request)
+            sharedURLCache.removeCachedResponse(for: request)
             
             // Set the placeholder image if it was provided.
             if let image = placeholderImage {
@@ -113,11 +113,11 @@ public extension MKAnnotationView {
             if cacheManager.isDownloadingFromURL(urlAbsoluteString) == false {
                 cacheManager.setIsDownloadingFromURL(true, forURLString: urlAbsoluteString)
                 
-                let dataTask = cacheManager.session.dataTaskWithRequest(request) {
-                    (taskData: NSData?, taskResponse: NSURLResponse?, taskError: NSError?) in
+                let dataTask = cacheManager.session.dataTask(with: request) {
+                    (taskData: Data?, taskResponse: URLResponse?, taskError: Error?) in
                     
                     guard let data = taskData, response = taskResponse, image = UIImage(data: data) where taskError == nil else {
-                        dispatch_async(dispatch_get_main_queue()) {
+                        DispatchQueue.main.async {
                             cacheManager.setIsDownloadingFromURL(false, forURLString: urlAbsoluteString)
                             cacheManager.removeImageCacheObserversForKey(urlAbsoluteString)
                             self.completionHolder.completion?(finished: false, error: taskError)
@@ -126,27 +126,27 @@ public extension MKAnnotationView {
                         return
                     }
                     
-                    dispatch_async(dispatch_get_main_queue()) {
-                        UIView.transitionWithView(self, duration: fadeAnimationDuration, options: .TransitionCrossDissolve, animations: {
+                    DispatchQueue.main.async {
+                        UIView.transition(with: self, duration: fadeAnimationDuration, options: .transitionCrossDissolve, animations: {
                             self.image = image
                         }, completion: nil)
                         
                         cacheManager[urlAbsoluteString] = image
                         
                         let responseDataIsCacheable = cacheManager.diskCacheMaxAge > 0 &&
-                            Double(data.length) <= 0.05 * Double(sharedURLCache.diskCapacity) &&
-                            (cacheManager.session.configuration.requestCachePolicy == .ReturnCacheDataElseLoad ||
-                                cacheManager.session.configuration.requestCachePolicy == .ReturnCacheDataDontLoad) &&
-                            (request.cachePolicy == .ReturnCacheDataElseLoad ||
-                                request.cachePolicy == .ReturnCacheDataDontLoad)
+                            Double(data.count) <= 0.05 * Double(sharedURLCache.diskCapacity) &&
+                            (cacheManager.session.configuration.requestCachePolicy == .returnCacheDataElseLoad ||
+                                cacheManager.session.configuration.requestCachePolicy == .returnCacheDataDontLoad) &&
+                            (request.cachePolicy == .returnCacheDataElseLoad ||
+                                request.cachePolicy == .returnCacheDataDontLoad)
                         
-                        if let httpResponse = response as? NSHTTPURLResponse, url = httpResponse.URL where responseDataIsCacheable {
+                        if let httpResponse = response as? HTTPURLResponse, url = httpResponse.url where responseDataIsCacheable {
                             if var allHeaderFields = httpResponse.allHeaderFields as? [String: String] {
                                 allHeaderFields["Cache-Control"] = "max-age=\(cacheManager.diskCacheMaxAge)"
-                                NSDate.timeIntervalSinceReferenceDate()
-                                if let cacheControlResponse = NSHTTPURLResponse(URL: url, statusCode: httpResponse.statusCode, HTTPVersion: "HTTP/1.1", headerFields: allHeaderFields) {
-                                    let cachedResponse = NSCachedURLResponse(response: cacheControlResponse, data: data, userInfo: ["creationTimestamp": NSDate.timeIntervalSinceReferenceDate()], storagePolicy: .Allowed)
-                                    sharedURLCache.storeCachedResponse(cachedResponse, forRequest: request)
+                                Date.timeIntervalSinceReferenceDate
+                                if let cacheControlResponse = HTTPURLResponse(url: url, statusCode: httpResponse.statusCode, httpVersion: "HTTP/1.1", headerFields: allHeaderFields) {
+                                    let cachedResponse = CachedURLResponse(response: cacheControlResponse, data: data, userInfo: ["creationTimestamp": Date.timeIntervalSinceReferenceDate], storagePolicy: .allowed)
+                                    sharedURLCache.storeCachedResponse(cachedResponse, for: request)
                                 }
                             }
                         }
