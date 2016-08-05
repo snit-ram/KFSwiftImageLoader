@@ -12,5 +12,6 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '8.2'
   s.source   = { :git => 'https://github.com/kiavashfaisali/KFSwiftImageLoader.git',
 				 :tag => s.version.to_s }
+  s.pod_target_xcconfig = { 'SWIFT_VERSION' => '3.0' }
   s.source_files = 'KFSwiftImageLoader/*.swift'
 end
